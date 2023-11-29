@@ -8,15 +8,25 @@ public class MoveObject : MonoBehaviour
     public float destroyThreshold = 0.1f; // Adjust this threshold based on the size of your objects
 
     private bool canBeDestroyed = false; // Flag to allow destruction only when true
+    private bool lKeyPressed = false; // Flag to track whether the "L" key is pressed
+    private Score scoreScript; // Reference to the Score script
+
+    void Start()
+    {
+        // Get the Score script component from the scene
+        scoreScript = FindObjectOfType<Score>();
+    }
 
     void Update()
     {
         // Move the object in the negative Z-direction
         transform.Translate(Vector3.back * speed * Time.deltaTime);
 
-        // Check if the right arrow key is pressed and a beat can be destroyed
-        if (Input.GetKey(KeyCode.RightArrow) && canBeDestroyed)
+        // Check if the L key is pressed and a beat can be destroyed
+        if (Input.GetKeyDown(KeyCode.L) && canBeDestroyed && !lKeyPressed)
         {
+            lKeyPressed = true;
+
             // Get the LaneController component from the scene
             LaneController laneController = FindObjectOfType<LaneController>();
 
@@ -26,12 +36,24 @@ public class MoveObject : MonoBehaviour
                 // Notify the LaneController that a beat is destroyed
                 laneController.OnBeatDestroyed();
 
+                // Increment the score by 10 using the Score script
+                if (scoreScript != null)
+                {
+                    scoreScript.IncreaseScore(10);
+
+                    // Increment the beatsDestroyed by 1 using the Score script
+                    scoreScript.IncrementBeatsDestroyed(1);
+                }
+
                 // Destroy the beat
                 Destroy(gameObject);
-
-                // Set the flag to prevent multiple destructions in a single frame
-                canBeDestroyed = false;
             }
+        }
+
+        // Check if the L key is released
+        if (Input.GetKeyUp(KeyCode.L))
+        {
+            lKeyPressed = false;
         }
     }
 
@@ -55,4 +77,3 @@ public class MoveObject : MonoBehaviour
         }
     }
 }
-
